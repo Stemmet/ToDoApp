@@ -1,55 +1,97 @@
-var myNodelist = document.getElementsByTagName("LI");
-var i;
-for (i = 0; i < myNodelist.length; i++) {
-  var span = document.createElement("SPAN");
-  var txt = document.createTextNode("\u00D7");
-  span.className = "close";
-  span.appendChild(txt);
-  myNodelist[i].appendChild(span);
+
+let taskInput = document.getElementById("new-task");
+let addButton = document.getElementsByTagName("button")[0];
+let incompleteTasksHolder = document.getElementById("incomplete-tasks");
+let completedTasksHolder = document.getElementById("completed-tasks");
+
+let createNewTaskElement = function(taskString) {
+  let listItem = document.createElement("li");
+
+  let checkBox = document.createElement("input");
+  let label = document.createElement("label");
+  let editInput = document.createElement("input");
+  let editButton = document.createElement("button");
+  let deleteButton = document.createElement("button");
+    
+  checkBox.type = "checkbox";
+  editInput.type = "text";
+  
+  editButton.innerText = "Edit";
+  editButton.className = "edit";
+  deleteButton.innerText = "Delete";
+  deleteButton.className = "delete";
+  
+  label.innerText = taskString;
+  
+  listItem.appendChild(checkBox);
+  listItem.appendChild(label);
+  listItem.appendChild(editInput);
+  listItem.appendChild(editButton);
+  listItem.appendChild(deleteButton);
+
+  return listItem;
 }
 
-var close = document.getElementsByClassName("close");
-var i;
-for (i = 0; i < close.length; i++) {
-  close[i].onclick = function () {
-    var div = this.parentElement;
-    div.style.display = "none";
-  };
+let addTask = function() {
+  console.log("Add task...");
+  let listItem = createNewTaskElement(taskInput.value);
+  incompleteTasksHolder.appendChild(listItem);
+  bindTaskEvents(listItem, taskCompleted);  
+  
+  taskInput.value = "";   
 }
-
-var list = document.querySelector("ul");
-list.addEventListener(
-  "click",
-  function (ev) {
-    if (ev.target.tagName === "LI") {
-      ev.target.classList.toggle("checked");
-    }
-  },
-  false
-);
-
-function newElement() {
-  var li = document.createElement("li");
-  var inputValue = document.getElementById("myInput").value;
-  var t = document.createTextNode(inputValue);
-  li.appendChild(t);
-  if (inputValue === "") {
-    alert("You must write something!");
+let editTask = function() {
+  console.log("Edit Task...");
+  
+  let listItem = this.parentNode;
+  
+  let editInput = listItem.querySelector("input[type=text]")
+  let label = listItem.querySelector("label");
+  
+  let containsClass = listItem.classList.contains("editMode");
+  if(containsClass) {
+    label.innerText = editInput.value;
   } else {
-    document.getElementById("myUL").appendChild(li);
+    editInput.value = label.innerText;
   }
-  document.getElementById("myInput").value = "";
-
-  var span = document.createElement("SPAN");
-  var txt = document.createTextNode("\u00D7");
-  span.className = "close";
-  span.appendChild(txt);
-  li.appendChild(span);
-
-  for (i = 0; i < close.length; i++) {
-    close[i].onclick = function () {
-      var div = this.parentElement;
-      div.style.display = "none";
-    };
-  }
+  listItem.classList.toggle("editMode");
 }
+let deleteTask = function() {
+  console.log("Delete task...");
+  let listItem = this.parentNode;
+  let ul = listItem.parentNode;
+  ul.removeChild(listItem);
+}
+let taskCompleted = function() {
+  console.log("Task complete...");
+  let listItem = this.parentNode;
+  completedTasksHolder.appendChild(listItem);
+  bindTaskEvents(listItem, taskIncomplete);
+}
+let taskIncomplete = function() {
+  console.log("Task Incomplete...");
+  let listItem = this.parentNode;
+  incompleteTasksHolder.appendChild(listItem);
+  bindTaskEvents(listItem, taskCompleted);
+}
+let bindTaskEvents = function(taskListItem, checkBoxEventHandler) {
+  console.log("Bind list item events");
+  let checkBox = taskListItem.querySelector("input[type=checkbox]");
+  let editButton = taskListItem.querySelector("button.edit");
+  let deleteButton = taskListItem.querySelector("button.delete");
+  editButton.onclick = editTask;
+  deleteButton.onclick = deleteTask;
+  checkBox.onchange = checkBoxEventHandler;
+}
+let ajaxRequest = function() {
+  console.log("AJAX Request");
+}
+addButton.addEventListener("click", addTask);
+addButton.addEventListener("click", ajaxRequest);
+for(let i = 0; i <  incompleteTasksHolder.children.length; i++) {
+  bindTaskEvents(incompleteTasksHolder.children[i], taskCompleted);
+}
+for(let i = 0; i <  completedTasksHolder.children.length; i++) {
+  bindTaskEvents(completedTasksHolder.children[i], taskIncomplete); 
+}
+
